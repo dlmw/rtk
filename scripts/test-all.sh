@@ -413,7 +413,18 @@ else
     skip "golangci-lint not installed"
 fi
 
-# ── 29. Global flags ────────────────────────────────
+# ── 29. Yarn (conditional) ─────────────────────────
+
+section "Yarn (conditional)"
+
+if command -v yarn &>/dev/null; then
+    assert_help    "rtk yarn"       rtk yarn --help
+    assert_help    "rtk yarn test"  rtk yarn test -h
+else
+    skip "yarn not installed"
+fi
+
+# ── 30. Global flags ────────────────────────────────
 
 section "Global flags"
 

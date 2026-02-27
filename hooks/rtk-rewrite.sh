@@ -194,6 +194,12 @@ elif echo "$MATCH_CMD" | grep -qE '^go[[:space:]]+vet([[:space:]]|$)'; then
   REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^go vet/rtk go vet/')"
 elif echo "$MATCH_CMD" | grep -qE '^golangci-lint([[:space:]]|$)'; then
   REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^golangci-lint/rtk golangci-lint/')"
+
+# --- Yarn tooling ---
+elif echo "$MATCH_CMD" | grep -qE '^yarn[[:space:]]+test([[:space:]]|$)'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^yarn test/rtk yarn test/')"
+elif echo "$MATCH_CMD" | grep -qE '^yarn[[:space:]]'; then
+  REWRITTEN="${ENV_PREFIX}$(echo "$CMD_BODY" | sed 's/^yarn /rtk yarn /')"
 fi
 
 # If no rewrite needed, approve as-is

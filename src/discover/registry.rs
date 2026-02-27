@@ -71,6 +71,7 @@ const PATTERNS: &[&str] = &[
     r"^curl\s+",
     r"^wget\s+",
     r"^(python3?\s+-m\s+)?mypy(\s|$)",
+    r"^yarn\s+(test|install|add|remove|build|start|dev)",
 ];
 
 const RULES: &[RtkRule] = &[
@@ -224,6 +225,13 @@ const RULES: &[RtkRule] = &[
         category: "Network",
         savings_pct: 65.0,
         subcmd_savings: &[],
+        subcmd_status: &[],
+    },
+    RtkRule {
+        rtk_cmd: "rtk yarn",
+        category: "Tests",
+        savings_pct: 90.0,
+        subcmd_savings: &[("test", 90.0)],
         subcmd_status: &[],
     },
     RtkRule {
@@ -787,6 +795,32 @@ mod tests {
                 rtk_equivalent: "rtk mypy",
                 category: "Build",
                 estimated_savings_pct: 80.0,
+                status: RtkStatus::Existing,
+            }
+        );
+    }
+
+    #[test]
+    fn test_classify_yarn_test() {
+        assert_eq!(
+            classify_command("yarn test"),
+            Classification::Supported {
+                rtk_equivalent: "rtk yarn",
+                category: "Tests",
+                estimated_savings_pct: 90.0,
+                status: RtkStatus::Existing,
+            }
+        );
+    }
+
+    #[test]
+    fn test_classify_yarn_test_with_args() {
+        assert_eq!(
+            classify_command("yarn test --coverage"),
+            Classification::Supported {
+                rtk_equivalent: "rtk yarn",
+                category: "Tests",
+                estimated_savings_pct: 90.0,
                 status: RtkStatus::Existing,
             }
         );

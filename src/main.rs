@@ -48,6 +48,7 @@ mod utils;
 mod vitest_cmd;
 mod wc_cmd;
 mod wget_cmd;
+mod yarn_cmd;
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
@@ -548,6 +549,12 @@ enum Commands {
         #[arg(short, long, default_value = "7")]
         since: u64,
     },
+
+    /// Yarn commands with compact output
+    Yarn {
+        #[command(subcommand)]
+        command: YarnCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -859,6 +866,19 @@ enum GoCommands {
         args: Vec<String>,
     },
     /// Passthrough: runs any unsupported go subcommand directly
+    #[command(external_subcommand)]
+    Other(Vec<OsString>),
+}
+
+#[derive(Subcommand)]
+enum YarnCommands {
+    /// Run tests with compact output (90% token reduction)
+    Test {
+        /// Additional yarn test arguments
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
+    /// Passthrough: runs any unsupported yarn subcommand directly
     #[command(external_subcommand)]
     Other(Vec<OsString>),
 }
@@ -1448,6 +1468,15 @@ fn main() -> Result<()> {
             hook_audit_cmd::run(since, cli.verbose)?;
         }
 
+        Commands::Yarn { command } => match command {
+            YarnCommands::Test { args } => {
+                yarn_cmd::run_test(&args, cli.verbose)?;
+            }
+            YarnCommands::Other(args) => {
+                yarn_cmd::run_other(&args, cli.verbose)?;
+            }
+        },
+
         Commands::Proxy { args } => {
             use std::process::Command;
 
@@ -1561,6 +1590,33 @@ mod tests {
                 assert_eq!(message, vec!["title", "body", "footer"]);
             }
             _ => panic!("Expected Git Commit command"),
+        }
+    }
+
+    #[test]
+    fn test_yarn_test_parsing() {
+        let cli =
+            Cli::try_parse_from(["rtk", "yarn", "test", "--coverage", "--watchAll=false"]).unwrap();
+        match cli.command {
+            Commands::Yarn {
+                command: YarnCommands::Test { args },
+            } => {
+                assert_eq!(args, vec!["--coverage", "--watchAll=false"]);
+            }
+            _ => panic!("Expected Yarn Test command"),
+        }
+    }
+
+    #[test]
+    fn test_yarn_passthrough() {
+        let cli = Cli::try_parse_from(["rtk", "yarn", "install"]).unwrap();
+        match cli.command {
+            Commands::Yarn {
+                command: YarnCommands::Other(args),
+            } => {
+                assert_eq!(args[0], "install");
+            }
+            _ => panic!("Expected Yarn Other command"),
         }
     }
 }

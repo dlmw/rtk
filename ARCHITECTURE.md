@@ -224,7 +224,7 @@ Database: ~/.local/share/rtk/history.db
 
 ## Module Organization
 
-### Complete Module Map (30 Modules)
+### Complete Module Map (31 Modules)
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -260,6 +260,7 @@ JS/TS STACK       lint_cmd.rs       lint                   84%        ✓
                   prisma_cmd.rs     prisma                 88%        ✓
                   vitest_cmd.rs     vitest                 99.5%      ✓
                   pnpm_cmd.rs       pnpm                   70-90%     ✓
+                  yarn_cmd.rs       yarn test              90%        ✓
 
 CONTAINERS        container.rs      podman, docker         60-80%     ✓
 
@@ -288,14 +289,14 @@ SHARED            utils.rs          Helpers                N/A        ✓
                   tee.rs            Full output recovery   N/A        ✓
 ```
 
-**Total: 50 modules** (32 command modules + 18 infrastructure modules)
+**Total: 51 modules** (33 command modules + 18 infrastructure modules)
 
 ### Module Count Breakdown
 
-- **Command Modules**: 31 (directly exposed to users)
+- **Command Modules**: 32 (directly exposed to users)
 - **Infrastructure Modules**: 18 (utils, filter, tracking, tee, config, init, gain, etc.)
 - **Git Commands**: 7 operations (status, diff, log, add, commit, push, branch/checkout)
-- **JS/TS Tooling**: 8 modules (modern frontend/fullstack development)
+- **JS/TS Tooling**: 9 modules (modern frontend/fullstack development)
 - **Python Tooling**: 3 modules (ruff, pytest, pip)
 - **Go Tooling**: 2 modules (go test/build/vet, golangci-lint)
 
@@ -369,7 +370,7 @@ Strategy            Modules              Technique               Reduction
    │ Mixed        │      Hide passing        "  • test_auth"
    └──────────────┘
 
-   Used by: vitest, playwright, runner (test mode)
+   Used by: vitest, yarn test, playwright, runner (test mode)
 
 8. TREE COMPRESSION
    ┌──────────────┐
@@ -401,7 +402,8 @@ Strategy            Modules              Technique               Reduction
    │ Mixed format │      Extract failures     Failure details
    └──────────────┘
 
-   Used by: pytest (text state machine: test_name → PASSED/FAILED)
+   Used by: pytest (text state machine: test_name → PASSED/FAILED),
+   yarn test (Jest: state machine PASS/FAIL → summary; Vitest: regex summary)
 
 12. NDJSON STREAMING
    ┌──────────────┐
@@ -752,7 +754,7 @@ let mut cmd = if is_pnpm {
     Command::new("npx").arg("--no-install").arg("--").arg("eslint")
 };
 
-Affects: lint, tsc, next, prettier, playwright, prisma, vitest, pnpm
+Affects: lint, tsc, next, prettier, playwright, prisma, vitest, pnpm, yarn
 ```
 
 **Why This Matters**:
@@ -1016,7 +1018,9 @@ Modules with Exit Code Preservation:
 • lint_cmd.rs (linter failures)
 • tsc_cmd.rs (TypeScript errors)
 • vitest_cmd.rs (test failures)
+• yarn_cmd.rs (test failures)
 • playwright_cmd.rs (E2E test failures)
+• yarn_cmd.rs (test failures)
 ```
 
 ---
@@ -1481,6 +1485,6 @@ When implementing a new command, consider:
 
 ---
 
-**Last Updated**: 2026-02-22
-**Architecture Version**: 2.2
+**Last Updated**: 2026-02-27
+**Architecture Version**: 2.3
 **rtk Version**: 0.22.2
